@@ -15,7 +15,7 @@ class PopulateBairrosCommand extends Command
     protected $description = 'Popula a tabela de bairros com dados da API do IBGE';
 
     private $maxRetries = 3;
-    private $retryDelay = 2; // segundos
+    private $retryDelay = 2;
 
     public function handle()
     {
@@ -31,7 +31,6 @@ class PopulateBairrosCommand extends Command
         $this->info("Iniciando busca de bairros para o estado: {$estado}");
         
         try {
-            // Primeiro, vamos buscar as cidades do estado
             $response = Http::timeout(30)->get("https://servicodados.ibge.gov.br/api/v1/localidades/estados/{$estado}/municipios");
             
             if (!$response->successful()) {
@@ -49,8 +48,6 @@ class PopulateBairrosCommand extends Command
             foreach ($cidades as $cidade) {
                 $this->processCidade($cidade, $estado);
                 $bar->advance();
-                
-                // Adiciona um pequeno delay entre as requisições
                 sleep(1);
             }
 
@@ -102,7 +99,6 @@ class PopulateBairrosCommand extends Command
 
     private function saveBairro($bairro, $cidade, $estado)
     {
-        // Verifica se já existe um bairro com o mesmo nome no mesmo município
         $existingBairro = Bairro::where('nome', $bairro['nome'])
             ->where('municipio', $cidade['nome'])
             ->where('uf', $estado)
